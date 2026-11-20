@@ -1,0 +1,14 @@
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: todo-list-nebus
+
+    ports:
+      - "3000:3000"
+
+    restart: unless-stopped
+
