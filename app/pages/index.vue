@@ -35,6 +35,7 @@ import TodoButton from '~/components/TodoButton.vue'
 import TodoCard from '~/components/TodoCard.vue'
 import { storeToRefs } from 'pinia'
 import { useTodosStore } from '~/stores/todos'
+import type { Todo } from '~/types'
 
 useHead({ title: 'Заметки' })
 
