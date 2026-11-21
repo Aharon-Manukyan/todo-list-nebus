@@ -19,9 +19,13 @@ export const useEditorStore = defineStore('editor', () => {
 
   const findNote = (id: string) => todo.value?.notes.find((note) => note.id === id)
 
-  function reset() {
+  function clearHistory() {
     undoStack.value = []
     redoStack.value = []
+  }
+
+  function reset() {
+    clearHistory()
     todo.value = null
   }
 
@@ -118,6 +122,7 @@ export const useEditorStore = defineStore('editor', () => {
     canRedo,
     initialize,
     reset,
+    clearHistory,
     undo,
     redo,
     setTitle,

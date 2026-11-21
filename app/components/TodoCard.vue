@@ -1,19 +1,7 @@
 <template>
   <article class="card">
     <header class="card__head">
-      <h2
-        class="card__title truncate"
-        @mouseenter="showTooltip = todo.title.length > TITLE_LENGTH"
-        @mouseleave="showTooltip = false"
-      >
-        <span v-if="!showTooltip">
-          {{ title }}
-          <span v-if="todo.title.length > TITLE_LENGTH">...</span>
-        </span>
-        <span v-if="showTooltip" class="card__tooltip">
-          {{ todo.title }}
-        </span>
-      </h2>
+      <h2 class="card__title truncate">{{ todo.title }}</h2>
       <span v-if="notes.length" class="card__count"
         >{{ doneCount }} из {{ todo.notes.length }}</span
       >
@@ -43,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { UNTITLED, PREVIEW_LIMIT, TITLE_LENGTH } from '~/core/constants'
+import { PREVIEW_LIMIT } from '~/core/constants'
 import type { Todo } from '~/types'
 
 const props = defineProps<{
@@ -54,21 +42,10 @@ const emit = defineEmits<{
   delete: []
 }>()
 
-const showTooltip = ref(false)
-
 const notes = computed(() => props.todo.notes ?? [])
 const preview = computed(() => notes.value.slice(0, PREVIEW_LIMIT))
 const rest = computed(() => Math.max(0, notes.value.length - PREVIEW_LIMIT))
 const doneCount = computed(() => notes.value.filter((note) => note.done).length)
-
-const title = computed(() => {
-  const trimedTitle = props.todo.title.trim()
-  if (!trimedTitle) return UNTITLED
-  if (trimedTitle.length > TITLE_LENGTH) {
-    return trimedTitle.slice(0, TITLE_LENGTH)
-  }
-  return trimedTitle
-})
 
 const onDelete = () => {
   emit('delete')
