@@ -9,7 +9,7 @@
 
     <ul v-if="todos.length" class="grid">
       <li v-for="todo in todos" :key="todo.id">
-        <TodoCard :todo="todo" @delete="removeTodo(todo.id)" />
+        <TodoCard :todo="todo" @delete="askDelete(todo)" />
       </li>
     </ul>
 
@@ -20,6 +20,13 @@
         <span>Создать заметку</span>
       </TodoButton>
     </section>
+    <TodoConfirm
+      :open="!!deleting"
+      title="Удалить заметку?"
+      :message="`«${deleting?.title.trim() || 'Без названия'}» будет удалена без возможности восстановления.`"
+      @confirm="confirmDelete"
+      @cancel="deleting = null"
+    />
   </div>
 </template>
 
@@ -31,6 +38,17 @@ import { useTodosStore } from '~/stores/todos'
 useHead({ title: 'Заметки' })
 
 const { todos, removeTodo } = useTodosStore()
+
+const deleting = ref<Todo | null>(null)
+
+const askDelete = (todo: Todo) => {
+  deleting.value = todo
+}
+
+const confirmDelete = () => {
+  if (deleting.value) removeTodo(deleting.value.id)
+  deleting.value = null
+}
 </script>
 <style scoped lang="scss">
 .head {
