@@ -6,13 +6,15 @@
         @mouseenter="showTooltip = todo.title.length > TITLE_LENGTH"
         @mouseleave="showTooltip = false"
       >
-        {{ title }}
-        <span v-if="!showTooltip && title.length !== todo.title.length">...</span>
+        <span v-if="!showTooltip">
+          {{ title }}
+          <span v-if="todo.title.length > TITLE_LENGTH">...</span>
+        </span>
         <span v-if="showTooltip" class="card__tooltip">
           {{ todo.title }}
         </span>
       </h2>
-      <span v-if="todo.notes.length" class="card__count"
+      <span v-if="notes.length" class="card__count"
         >{{ doneCount }} из {{ todo.notes.length }}</span
       >
     </header>
@@ -22,7 +24,6 @@
         <span class="tick" aria-hidden="true">
           <AppIcon v-if="item.done" name="check" />
         </span>
-        <span>{{ item.done ? 'Выполнено: ' : 'Не выполнено: ' }}</span>
         <span class="card__text">{{ item.text }}</span>
       </li>
     </ul>
@@ -34,7 +35,7 @@
         <AppIcon name="edit" />
         Изменить
       </TodoButton>
-      <TodoButton variant="danger" :aria-label="`Удалить заметку «${title}»`">
+      <TodoButton variant="danger" :aria-label="`Удалить заметку «${title}»`" @click="onDelete">
         <AppIcon name="trash" /> Удалить
       </TodoButton>
     </footer>
@@ -49,6 +50,17 @@ const props = defineProps<{
   todo: Todo
 }>()
 
+const emit = defineEmits<{
+  delete: []
+}>()
+
+const showTooltip = ref(false)
+
+const notes = computed(() => props.todo.notes ?? [])
+const preview = computed(() => notes.value.slice(0, PREVIEW_LIMIT))
+const rest = computed(() => Math.max(0, notes.value.length - PREVIEW_LIMIT))
+const doneCount = computed(() => notes.value.filter((note) => note.done).length)
+
 const title = computed(() => {
   const trimedTitle = props.todo.title.trim()
   if (!trimedTitle) return UNTITLED
@@ -58,16 +70,9 @@ const title = computed(() => {
   return trimedTitle
 })
 
-const preview = computed(() => props.todo.notes.slice(0, PREVIEW_LIMIT))
-const rest = computed(() => Math.max(0, props.todo.notes.length - PREVIEW_LIMIT))
-
-const doneCount = computed(() =>
-  props.todo.notes.reduce((acc, note) => {
-    return acc + Number(note.done)
-  }, 0),
-)
-
-const showTooltip = ref(false)
+const onDelete = () => {
+  emit('delete')
+}
 </script>
 
 <style scoped lang="scss">
