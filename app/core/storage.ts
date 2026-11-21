@@ -1,6 +1,6 @@
 import type { Todo } from '~/types'
+import { STORAGE_KEY } from './constants'
 
-export const STORAGE_KEY = 'todos'
 export const SCHEMA_VERSION = 1
 
 interface StoredData {

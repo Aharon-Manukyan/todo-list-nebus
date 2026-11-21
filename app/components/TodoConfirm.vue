@@ -2,36 +2,57 @@
   <dialog
     ref="dialog"
     class="confirm"
-    aria-labelledby="confirm-title"
-    @close="emit('cancel')"
+    :aria-labelledby="titleId"
+    @close="onClose"
     @click.self="emit('cancel')"
     @keydown.left.prevent="moveFocus(-1)"
     @keydown.right.prevent="moveFocus(1)"
   >
     <div class="confirm__body">
-      <h2 id="confirm-title" class="confirm__title">{{ title }}</h2>
+      <h2 :id="titleId" class="confirm__title">{{ title }}</h2>
       <p class="confirm__text">{{ message }}</p>
 
       <div class="confirm__actions">
-        <TodoButton variant="ghost" @click="emit('cancel')">Отмена</TodoButton>
-        <TodoButton variant="danger" @click="emit('confirm')">Удалить</TodoButton>
+        <TodoButton variant="ghost" :autofocus="initialFocus === 'cancel'" @click="emit('cancel')">
+          {{ cancelLabel }}
+        </TodoButton>
+        <TodoButton
+          :variant="confirmVariant"
+          :autofocus="initialFocus === 'confirm'"
+          @click="emit('confirm')"
+        >
+          {{ confirmLabel }}
+        </TodoButton>
       </div>
     </div>
   </dialog>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  open: boolean
-  title: string
-  message: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    open: boolean
+    title: string
+    message: string
+    confirmLabel?: string
+    cancelLabel?: string
+    confirmVariant?: 'primary' | 'danger'
+    initialFocus?: 'confirm' | 'cancel'
+  }>(),
+  {
+    confirmLabel: 'Удалить',
+    cancelLabel: 'Отмена',
+    confirmVariant: 'danger',
+    initialFocus: 'cancel',
+  },
+)
 
 const emit = defineEmits<{
   confirm: []
   cancel: []
 }>()
 
+const titleId = useId()
 const dialog = ref<HTMLDialogElement | null>(null)
 
 const moveFocus = (step: number) => {
@@ -39,6 +60,10 @@ const moveFocus = (step: number) => {
   const current = buttons.indexOf(document.activeElement as HTMLElement)
   if (current === -1) return
   buttons[(current + step + buttons.length) % buttons.length]?.focus()
+}
+
+const onClose = () => {
+  if (props.open) emit('cancel')
 }
 
 const lockScroll = (locked: boolean) => {

@@ -1,7 +1,7 @@
 <template>
   <article class="card">
     <header class="card__head">
-      <h2 class="card__title truncate">{{ todo.title }}</h2>
+      <h2 class="card__title">{{ todo.title.trim() || UNTITLED }}</h2>
       <span v-if="notes.length" class="card__count"
         >{{ doneCount }} из {{ todo.notes.length }}</span
       >
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { PREVIEW_LIMIT } from '~/core/constants'
+import { PREVIEW_LIMIT, UNTITLED } from '~/core/constants'
 import type { Todo } from '~/types'
 
 const props = defineProps<{
