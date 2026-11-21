@@ -69,7 +69,7 @@ const onDelete = () => {
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.6rem;
-    background: var(--spine);
+    background: var(--accent);
   }
 
   &__head {

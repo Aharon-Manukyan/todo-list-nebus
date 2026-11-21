@@ -30,6 +30,9 @@
           <TodoButton v-if="!isNew" variant="danger" @click="askDelete">
             <AppIcon name="trash" /> Удалить
           </TodoButton>
+          <TodoButton variant="ghost" @click="askCancel">
+            <AppIcon name="back" /> Отмена
+          </TodoButton>
           <TodoButton variant="primary" @click="onSave">
             <AppIcon name="save" /> Сохранить
           </TodoButton>
@@ -78,6 +81,16 @@
       @confirm="confirmDelete"
       @cancel="deleting = false"
     />
+
+    <TodoConfirm
+      :open="cancelling"
+      title="Отменить редактирование?"
+      message="Все несохранённые изменения будут потеряны."
+      confirm-label="Отменить изменения"
+      cancel-label="Продолжить"
+      @confirm="confirmCancel"
+      @cancel="cancelling = false"
+    />
   </div>
 </template>
 
@@ -96,18 +109,18 @@ const todoId = computed(() => String(id))
 
 const isNew = todoId.value === 'new'
 const existing = isNew ? undefined : getById(todoId.value)
-const status = ref<'loading' | 'ready' | 'not-found'>(isNew || existing ? 'ready' : 'not-found')
-
+const status: 'ready' | 'not-found' = isNew || existing ? 'ready' : 'not-found'
 const createEmpty = (): Todo => ({ id: v4(), title: '', notes: [] })
 
 const editor = useEditorStore()
-if (status.value === 'ready') editor.initialize(existing ?? createEmpty())
+if (status === 'ready') editor.initialize(existing ?? createEmpty())
 const { todo, canUndo, canRedo } = storeToRefs(editor)
 const { undo, redo, setTitle, setText, setToggle, addNote, removeNote } = editor
 
 onBeforeUnmount(editor.reset)
 
 const deleting = ref(false)
+const cancelling = ref(false)
 
 const addTodo = () => {
   addNote({
@@ -128,9 +141,18 @@ const askDelete = () => {
   deleting.value = true
 }
 
+const askCancel = () => {
+  cancelling.value = true
+}
+
 const confirmDelete = () => {
   deleting.value = false
   removeTodo(todoId.value)
+  navigateTo('/')
+}
+
+const confirmCancel = () => {
+  cancelling.value = false
   navigateTo('/')
 }
 </script>
@@ -141,6 +163,7 @@ const confirmDelete = () => {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.75rem;
+  margin: 10px 0;
 
   &__group {
     display: flex;
