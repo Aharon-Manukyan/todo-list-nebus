@@ -6,13 +6,23 @@
       <TodoButton to="/" variant="primary"> <AppIcon name="back" /> К списку заметок </TodoButton>
     </section>
 
-    <section v-else class="editor">
+    <section v-else-if="todo" class="editor">
       <div class="bar" role="toolbar" aria-label="Действия с заметкой">
         <div class="bar__group">
-          <TodoButton variant="secondary" disabled title="Отменить изменение (Ctrl+Z)">
+          <TodoButton
+            variant="secondary"
+            :disabled="!canUndo"
+            title="Отменить изменение (Ctrl+Z)"
+            @click="undo"
+          >
             <AppIcon name="undo" /> Отменить
           </TodoButton>
-          <TodoButton variant="secondary" disabled title="Повторить изменение (Shift+Ctrl+Z)">
+          <TodoButton
+            variant="secondary"
+            :disabled="!canRedo"
+            title="Повторить изменение (Shift+Ctrl+Z)"
+            @click="redo"
+          >
             <AppIcon name="redo" /> Повторить
           </TodoButton>
         </div>
@@ -20,7 +30,6 @@
           <TodoButton v-if="!isNew" variant="danger" @click="askDelete">
             <AppIcon name="trash" /> Удалить
           </TodoButton>
-          <TodoButton variant="ghost" @click="onCancel">Отмена</TodoButton>
           <TodoButton variant="primary" @click="onSave">
             <AppIcon name="save" /> Сохранить
           </TodoButton>
@@ -28,23 +37,30 @@
       </div>
 
       <input
-        v-model="todo.title"
+        :value="todo.title"
         class="title"
         placeholder="Название заметки"
         aria-label="Название заметки"
+        @change="setTitle(($event.target as HTMLInputElement).value)"
       />
 
       <ul class="todos">
         <li v-for="(note, index) in todo.notes" :key="note.id" class="todo">
-          <input v-model="note.done" type="checkbox" aria-label="Выполнено" />
           <input
-            v-model="note.text"
+            type="checkbox"
+            :checked="note.done"
+            aria-label="Выполнено"
+            @change="setToggle(note.id)"
+          />
+          <input
+            :value="note.text"
             class="todo__text"
             :class="{ 'todo__text--done': note.done }"
             placeholder="Что нужно сделать?"
             aria-label="Текст пункта"
+            @change="setText(note.id, ($event.target as HTMLInputElement).value)"
           />
-          <TodoButton variant="danger" aria-label="Удалить пункт" @click="remove(index)">
+          <TodoButton variant="danger" aria-label="Удалить пункт" @click="removeNote(index)">
             <AppIcon name="trash" />
           </TodoButton>
         </li>
@@ -56,26 +72,27 @@
     </section>
 
     <TodoConfirm
-      :open="!!deleting"
+      :open="deleting"
       title="Удалить заметку?"
       :message="`«${todo?.title.trim() || 'Без названия'}» будет удалена без возможности восстановления.`"
       @confirm="confirmDelete"
-      @cancel="deleting = null"
+      @cancel="deleting = false"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { v4 } from 'uuid'
+import { storeToRefs } from 'pinia'
+import { useEditorStore } from '~/stores/editor'
 import { useTodosStore } from '~/stores/todos'
 import type { Todo } from '~/types'
 
-const { getById, saveTodo, removeTodo } = useTodosStore()
+const todosStore = useTodosStore()
+const { getById, saveTodo, removeTodo } = todosStore
 
 const { id } = useRoute().params
 const todoId = computed(() => String(id))
-
-const deleting = ref(false)
 
 const isNew = todoId.value === 'new'
 const existing = isNew ? undefined : getById(todoId.value)
@@ -83,10 +100,17 @@ const status = ref<'loading' | 'ready' | 'not-found'>(isNew || existing ? 'ready
 
 const createEmpty = (): Todo => ({ id: v4(), title: '', notes: [] })
 
-const todo = ref<Todo>(existing ? JSON.parse(JSON.stringify(existing)) : createEmpty())
+const editor = useEditorStore()
+if (status.value === 'ready') editor.initialize(existing ?? createEmpty())
+const { todo, canUndo, canRedo } = storeToRefs(editor)
+const { undo, redo, setTitle, setText, setToggle, addNote, removeNote } = editor
+
+onBeforeUnmount(editor.reset)
+
+const deleting = ref(false)
 
 const addTodo = () => {
-  todo.value.notes.push({
+  addNote({
     id: v4(),
     text: '',
     done: false,
@@ -95,21 +119,8 @@ const addTodo = () => {
   })
 }
 
-const remove = (index: number) => {
-  todo.value.notes.splice(index, 1)
-}
-
-const onCancel = () => {
-  navigateTo('/')
-}
-
-const onDelete = (id: string) => {
-  removeTodo(id)
-  navigateTo('/')
-}
-
 const onSave = () => {
-  saveTodo(todo.value)
+  if (todo.value) saveTodo(todo.value)
   navigateTo('/')
 }
 

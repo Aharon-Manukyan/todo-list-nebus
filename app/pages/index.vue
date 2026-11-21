@@ -33,11 +33,14 @@
 <script setup lang="ts">
 import TodoButton from '~/components/TodoButton.vue'
 import TodoCard from '~/components/TodoCard.vue'
+import { storeToRefs } from 'pinia'
 import { useTodosStore } from '~/stores/todos'
 
 useHead({ title: 'Заметки' })
 
-const { todos, removeTodo } = useTodosStore()
+const todosStore = useTodosStore()
+const { todos } = storeToRefs(todosStore)
+const { removeTodo } = todosStore
 
 const deleting = ref<Todo | null>(null)
 
