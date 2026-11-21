@@ -83,11 +83,13 @@
 
 <script setup lang="ts">
 import { v4 } from 'uuid'
+import { storeToRefs } from 'pinia'
 import { useEditorStore } from '~/stores/editor'
 import { useTodosStore } from '~/stores/todos'
 import type { Todo } from '~/types'
 
-const { getById, saveTodo, removeTodo } = useTodosStore()
+const todosStore = useTodosStore()
+const { getById, saveTodo, removeTodo } = todosStore
 
 const { id } = useRoute().params
 const todoId = computed(() => String(id))
@@ -100,8 +102,8 @@ const createEmpty = (): Todo => ({ id: v4(), title: '', notes: [] })
 
 const editor = useEditorStore()
 if (status.value === 'ready') editor.initialize(existing ?? createEmpty())
-const { todo, canUndo, canRedo, undo, redo, setTitle, setText, setToggle, addNote, removeNote } =
-  editor
+const { todo, canUndo, canRedo } = storeToRefs(editor)
+const { undo, redo, setTitle, setText, setToggle, addNote, removeNote } = editor
 
 onBeforeUnmount(editor.reset)
 
