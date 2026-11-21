@@ -9,7 +9,7 @@
 
     <ul v-if="todos.length" class="grid">
       <li v-for="todo in todos" :key="todo.id">
-        <TodoCard :todo="todo" />
+        <TodoCard :todo="todo" @delete="askDelete(todo)" />
       </li>
     </ul>
 
@@ -20,89 +20,34 @@
         <span>Создать заметку</span>
       </TodoButton>
     </section>
+    <TodoConfirm
+      :open="!!deleting"
+      title="Удалить заметку?"
+      :message="`«${deleting?.title.trim() || 'Без названия'}» будет удалена без возможности восстановления.`"
+      @confirm="confirmDelete"
+      @cancel="deleting = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Todo } from '~/types'
 import TodoButton from '~/components/TodoButton.vue'
 import TodoCard from '~/components/TodoCard.vue'
+import { useTodosStore } from '~/stores/todos'
 
 useHead({ title: 'Заметки' })
 
-const todos = ref<Todo[]>([
-  {
-    id: '1',
-    title: 'Заметка1Заметка1Заметка1Заметка1Заметка1Заметка1Заметка1Заметка1Заметка1Заметка1',
-    notes: [
-      {
-        id: '1',
-        text: 'Задача 1.1 Задача 1.1 Задача 1.1 Задача1.1Задача1.1Задача 1.1Задача1.1Задача1.1Задача 1.1',
-        done: false,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-      {
-        id: '2',
-        text: 'Задача 1.2',
-        done: true,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-      {
-        id: '3',
-        text: 'Задача 1.3',
-        done: true,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-      {
-        id: '4',
-        text: 'Задача 1.4',
-        done: false,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-      {
-        id: '5',
-        text: 'Задача 1.5',
-        done: true,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Заметка 2',
-    notes: [
-      {
-        id: '3',
-        text: 'Задача 2.1',
-        done: true,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Заметка 3',
-    notes: [
-      {
-        id: '11',
-        text: 'Задача 3.1',
-        done: false,
-        createdAt: new Date('2026-01-01').toDateString(),
-        updatedAt: new Date('2026-01-01').toDateString(),
-      },
-    ],
-  },
-])
+const { todos, removeTodo } = useTodosStore()
 
-async function onDelete(todo: Todo): Promise<void> {
-  await 1
-  console.log('onDelete', todo)
+const deleting = ref<Todo | null>(null)
+
+const askDelete = (todo: Todo) => {
+  deleting.value = todo
+}
+
+const confirmDelete = () => {
+  if (deleting.value) removeTodo(deleting.value.id)
+  deleting.value = null
 }
 </script>
 <style scoped lang="scss">
