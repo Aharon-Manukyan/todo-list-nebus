@@ -117,6 +117,7 @@ import { clearDraft, loadDraft, type Draft } from '~/core/storage'
 import { storeToRefs } from 'pinia'
 import { useEditorStore } from '~/stores/editor'
 import type { Todo } from '~/types'
+import { useUndoShortcuts } from '~/core/undoShortcuts'
 
 const todosStore = useTodosStore()
 const { todos } = storeToRefs(todosStore)
@@ -132,6 +133,8 @@ const createEmpty = (id: string = v4()): Todo => ({ id, title: '', notes: [] })
 const editor = useEditorStore()
 const { todo, canUndo, canRedo } = storeToRefs(editor)
 const { undo, redo, setTitle, setText, setToggle, addNote, removeNote } = editor
+
+useUndoShortcuts(undo, redo)
 
 useHead({ title: existing?.title ?? 'Новая заметка' })
 
