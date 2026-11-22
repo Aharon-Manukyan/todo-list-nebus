@@ -1,7 +1,7 @@
 <template>
   <article class="card">
     <header class="card__head">
-      <h2 class="card__title">{{ todo.title.trim() || UNTITLED }}</h2>
+      <h2 class="card__title">{{ title || UNTITLED }}</h2>
       <span v-if="notes.length" class="card__count"
         >{{ doneCount }} из {{ todo.notes.length }}</span
       >
@@ -42,6 +42,7 @@ const emit = defineEmits<{
   delete: []
 }>()
 
+const title = computed(() => props.todo.title.trim() || UNTITLED)
 const notes = computed(() => props.todo.notes ?? [])
 const preview = computed(() => notes.value.slice(0, PREVIEW_LIMIT))
 const rest = computed(() => Math.max(0, notes.value.length - PREVIEW_LIMIT))

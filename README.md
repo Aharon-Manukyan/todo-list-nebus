@@ -1,75 +1,45 @@
-# Nuxt Minimal Starter
+# Заметки с Todo-списками
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+SPA-приложение для заметок на Nuxt 4. У каждой заметки есть название и список задач (чекбокс и текст). Изменения можно откатывать и повторять, а несохранённая правка переживает перезагрузку страницы.
 
-## Setup
+## Стек
 
-Make sure to install dependencies:
+Nuxt 4, Vue 3 (Composition API), TypeScript (strict), Pinia, SCSS, Vitest.
+UI-библиотеки не используются: вёрстка и модальные окна собственные.
+
+## Запуск
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+npm run dev                    # http://localhost:3000
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Docker:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+docker compose up --build      # или: docker-compose up --build
 ```
 
-## Production
-
-Build the application for production:
+Тесты и проверки:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm test
+npm run typecheck
+npm run lint
 ```
 
-Locally preview production build:
+## Как это устроено
 
-```bash
-# npm
-npm run preview
+- **Хранилище.** Заметки лежат в `localStorage` в формате `{ version, todos }`. Версия схемы позволяет менять формат, а `migrate` приводит старые данные к актуальному виду. Запись идёт только по «Сохранить» и «Удалить». Синхронизация с хранилищем и история написаны вручную, без плагинов.
+- **История (undo/redo).** Хранятся изменения («было, стало»), а не копии заметки. Ввод в поле фиксируется по потере фокуса, чекбокс, добавление и удаление пункта — отдельные записи. Новое изменение после undo очищает redo. Лимит 50 шагов. «Сохранить» и «Отмена» сбрасывают историю.
+- **Горячие клавиши.** `Ctrl+Z` и `Shift+Ctrl+Z` (на macOS `Cmd`) работают на странице редактирования. В текстовых полях действует нативный undo браузера, поэтому конфликта нет.
+- **Черновик.** Правки автоматически сохраняются в `localStorage`. После перезагрузки страница предлагает восстановить черновик.
+- **Несколько вкладок.** Список обновляется между вкладками. Если заметку удалили в соседней вкладке, открытая страница редактирования показывает предупреждение и не ломается.
+- **Модальные окна.** Нативный `<dialog>`: фокус удерживается внутри, закрытие по `Escape`, управление с клавиатуры. `alert` не используется.
 
-# pnpm
-pnpm preview
+## Принятые решения
 
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- Несуществующий URL: страница «Заметка не найдена».
+- Пустое название допускается, в списке показывается «Без названия».
+- Пустые пункты отбрасываются при сохранении.
+- Изменённая заметка остаётся на своём месте в списке.

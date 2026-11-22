@@ -11,7 +11,11 @@ export const useTodosStore = defineStore('todos', () => {
   function saveTodo(todo: Todo) {
     const copy: Todo = JSON.parse(JSON.stringify(todo))
     copy.notes = copy.notes.filter((note) => note.text.trim() !== '')
-    todos.value = [...todos.value.filter((item) => item.id !== copy.id), copy]
+
+    const exists = todos.value.some((item) => item.id === copy.id)
+    todos.value = exists
+      ? todos.value.map((item) => (item.id === copy.id ? copy : item))
+      : [...todos.value, copy]
     saveTodos(todos.value)
   }
 
