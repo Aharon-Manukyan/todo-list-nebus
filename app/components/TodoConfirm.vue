@@ -70,16 +70,19 @@ const lockScroll = (locked: boolean) => {
   document.documentElement.style.overflow = locked ? 'hidden' : ''
 }
 
-watch(
-  () => props.open,
-  (open) => {
-    const el = dialog.value
-    if (!el) return
-    if (open && !el.open) el.showModal()
-    else if (!open && el.open) el.close()
-    lockScroll(open)
-  },
-)
+const sync = (open: boolean) => {
+  const el = dialog.value
+  if (!el) return
+  if (open && !el.open) el.showModal()
+  else if (!open && el.open) el.close()
+  lockScroll(open)
+}
+
+watch(() => props.open, sync)
+
+onMounted(() => {
+  if (props.open) sync(true)
+})
 
 onBeforeUnmount(() => lockScroll(false))
 </script>

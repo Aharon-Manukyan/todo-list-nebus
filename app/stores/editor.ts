@@ -16,6 +16,7 @@ export const useEditorStore = defineStore('editor', () => {
   const redoStack = ref<Op[]>([])
   const canUndo = computed(() => undoStack.value.length > 0)
   const canRedo = computed(() => redoStack.value.length > 0)
+  const baseline = ref('')
 
   const findNote = (id: string) => todo.value?.notes.find((note) => note.id === id)
 
@@ -27,11 +28,13 @@ export const useEditorStore = defineStore('editor', () => {
   function reset() {
     clearHistory()
     todo.value = null
+    baseline.value = ''
   }
 
-  function initialize(source: Todo) {
+  function initialize(source: Todo, base: Todo = source) {
     reset()
     todo.value = JSON.parse(JSON.stringify(source))
+    baseline.value = JSON.stringify(base)
   }
 
   function apply(op: Op, back: boolean) {
@@ -114,6 +117,10 @@ export const useEditorStore = defineStore('editor', () => {
     if (note) commit({ type: 'remove', index, note: { ...note } })
   }
 
+  const isChanged = computed(
+    () => todo.value !== null && JSON.stringify(todo.value) !== baseline.value,
+  )
+
   return {
     todo,
     undoStack,
@@ -130,5 +137,6 @@ export const useEditorStore = defineStore('editor', () => {
     setToggle,
     addNote,
     removeNote,
+    isChanged,
   }
 })
