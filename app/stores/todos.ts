@@ -20,5 +20,9 @@ export const useTodosStore = defineStore('todos', () => {
     saveTodos(todos.value)
   }
 
-  return { todos, getById, saveTodo, removeTodo }
+  function reload() {
+    todos.value = loadTodos()
+  }
+
+  return { todos, getById, saveTodo, removeTodo, reload }
 })
