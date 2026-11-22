@@ -1,14 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Note, Todo } from '~/types'
+import type { Note, Todo, Op } from '~/types'
 import { HISTORY_LIMIT } from '~/core/constants'
-
-type Op =
-  | { type: 'title'; from: string; to: string }
-  | { type: 'text'; id: string; from: string; to: string }
-  | { type: 'done'; id: string; from: boolean; to: boolean }
-  | { type: 'add'; index: number; note: Note }
-  | { type: 'remove'; index: number; note: Note }
 
 export const useEditorStore = defineStore('editor', () => {
   const todo = ref<Todo | null>(null)

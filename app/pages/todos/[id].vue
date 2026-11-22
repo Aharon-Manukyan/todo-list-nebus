@@ -3,13 +3,14 @@
     <section v-if="status === 'not-found'" class="missing">
       <h1 class="missing__title">Заметка не найдена</h1>
       <p class="missing__text">Возможно, её удалили или ссылка введена с ошибкой.</p>
-      <TodoButton to="/" variant="primary"> <AppIcon name="back" /> К списку заметок </TodoButton>
+      <TodoButton to="/" variant="primary">
+        <AppIcon name="back" />
+        <span>К списку заметок</span>
+      </TodoButton>
     </section>
 
     <section v-else-if="todo" class="editor">
-      <p v-if="deletedElsewhere" class="notice" role="alert">
-        Эта заметка была удалена в другой вкладке. Если сохранить её, она вернётся в список.
-      </p>
+      <p v-if="deletedElsewhere" class="notice" role="alert">Эта заметка была удалена</p>
       <div class="bar" role="toolbar" aria-label="Действия с заметкой">
         <div class="bar__group">
           <TodoButton
